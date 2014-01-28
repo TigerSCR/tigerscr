@@ -10,15 +10,18 @@ namespace TigerSCR
     {
         private string isin;
         private Security security;
+        private string countrySecurity;
         private string name;
         private double value;
+        private string currency;
+        private bool ocde;
+        private bool ue;
 
-        public Title(string _isin, Security _security, string _name="", double _value=0)
+        public Title(string _isin, Security _security, string _countrySecurity)
         {
             this.isin = _isin;
             this.security = _security;
-            this.name = _name;
-            this.value = _value;
+            this.countrySecurity = _countrySecurity;
         }
 
         public string ToString()

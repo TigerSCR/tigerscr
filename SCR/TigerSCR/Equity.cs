@@ -7,8 +7,8 @@ namespace TigerSCR
 {
     class Equity : Title
     {
-        public Equity(string _isin, string _name="")
-            : base(_isin,Security.equity,_name)
+        public Equity(string _isin, string _countrySecurity)
+            : base(_isin,Security.equity,_countrySecurity)
         {}
     }
 }

@@ -55,7 +55,7 @@ namespace Bloomberg
             }
         }
 
-        public void getEquity(List<Title> l_title)
+        public void getEquity(List<Equity> l_equity)
         {
             CorrelationID requestID = new CorrelationID(1);
             Service refDataSvc = session.GetService("//blp/refdata");
@@ -67,12 +67,13 @@ namespace Bloomberg
             {
                 request = refDataSvc.CreateRequest("ReferenceDataRequest");
 
-                foreach (Title title in l_title)
+                foreach (Title title in l_equity)
                 {
                     request.Append("securities", title.ToSecurities()+" EQUITY");
                     request.Append("fields", "PX_LAST");
                     request.Append("fields", "CRNCY");
                     request.Append("fields", "COUNTRY");
+                    request.Append("fields", "NAME");
                 }
 
                 session.SendRequest(request, requestID);
@@ -84,22 +85,27 @@ namespace Bloomberg
                     {
                         case Event.EventType.RESPONSE: // final event
                             continueToLoop = false;
-                            handleResponseEvent(eventObj);
+                            handleResponseEvent(eventObj, l_equity);
                             break;
                         case Event.EventType.PARTIAL_RESPONSE:
-                            handleResponseEvent(eventObj);
+                            handleResponseEvent(eventObj, l_equity);
                             break;
                         default:
                             handleOtherEvent(eventObj);
                             break;
                     }
                 }
+
+                foreach (Equity equit in l_equity)
+                {
+                    Console.WriteLine(equit.ToString());
+                }
                 Console.ReadKey();
             }
         }
         
 
-        private static void handleResponseEvent(Event eventObj)
+        private static void handleResponseEvent(Event eventObj, List<Equity> l_equity)
         {
             foreach (Message message in eventObj.GetMessages())
             {
@@ -109,12 +115,11 @@ namespace Bloomberg
                     throw new Exception("responseError " + ReferenceDataResponse.ToString());
                 }
                 Element securityDataArray = ReferenceDataResponse.GetElement("securityData");
-                ParseDataArray(securityDataArray);
+                ParseDataArray(securityDataArray, l_equity);
             }
-            
         }
 
-        private static void ParseDataArray(Element securityDataArray)
+        private static void ParseDataArray(Element securityDataArray, List<Equity> l_equity)
         {
             int numItems = securityDataArray.NumValues;
             for (int i = 0; i < numItems; ++i)
@@ -133,9 +138,18 @@ namespace Bloomberg
                     string country = fieldData.GetElementAsString("COUNTRY");
                     double px_last = fieldData.GetElementAsFloat64("PX_LAST");
                     string currency = fieldData.GetElementAsString("CRNCY");
+                    string name = fieldData.GetElementAsString("NAME");
                     Console.WriteLine("Isin : "+security+
                                        "\nPX last : "+px_last+" Country: "+country+
                                        " Currency: "+currency);
+
+                    string[] securityTab = security.Split(' ');
+                    if (securityTab.Length == 3)
+                    {
+                        Equity equit = new Equity(securityTab[0], securityTab[1], country, currency, name, px_last);
+                        l_equity.RemoveAt(0);
+                        l_equity.Add(equit);
+                    }
                 }
             }
         }

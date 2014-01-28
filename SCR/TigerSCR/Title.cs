@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace TigerSCR
+namespace Bloomberg
 {
-    public enum Security {equity,corp}
-    class Title
+    public enum Security { equity, corp }
+    public class Title
     {
         private string isin;
         private Security security;
         private string countrySecurity;
+        private string country;
         private string name;
         private double value;
         private string currency;
@@ -18,7 +19,7 @@ namespace TigerSCR
         private bool ue;
 
         #region donnees
-        List<string> oecd = new List<string>{
+        List<string> l_ocde = new List<string>{
             "AUSTRALIA",
             "AUSTRIA",
             "BELGIUM",
@@ -53,7 +54,7 @@ namespace TigerSCR
             "TURKEY",
             "UNITED KINGDOM",
             "UNITED STATES"};
-        List<string> ue = new List<string>{
+        List<string> l_ue = new List<string>{
             "AUSTRIA",
             "BELGIUM",
             "BULGARIA",
@@ -83,16 +84,32 @@ namespace TigerSCR
             "UNITED KINDGDOM"};
             #endregion
 
-        public Title(string _isin, Security _security, string _countrySecurity)
+        public Title(string _isin, string _countrySecurity ,Security _security)
         {
             this.isin = _isin;
-            this.security = _security;
             this.countrySecurity = _countrySecurity;
+            this.security = _security;
         }
 
-        public string ToString()
+        public Title(string _isin, string _countrySecurity, Security _security, string country, string currency, string name, double value)
+        {
+            this.isin = _isin;
+            this.countrySecurity = _countrySecurity;
+            this.security = _security;
+            this.country = country;
+            this.currency = currency;
+            this.name = name;
+            this.value = value;
+        }
+
+        override public string ToString()
         {
             return isin + " : " + name + " = " + value;
+        }
+
+        public string ToSecurities()
+        {
+            return isin + " " + countrySecurity;
         }
     }
 }

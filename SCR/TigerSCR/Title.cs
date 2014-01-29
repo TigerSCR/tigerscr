@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Bloomberg
+namespace TigerSCR
 {
     public enum Security { equity, corp }
-    public class Title
+    public abstract class Title
     {
         private string isin;
         private Security security;
@@ -100,6 +100,22 @@ namespace Bloomberg
             this.currency = currency;
             this.name = name;
             this.value = value;
+        }
+
+        public Title(Title _t)
+        {
+            this.isin = _t.isin;
+            this.countrySecurity = _t.countrySecurity;
+            this.security = _t.security;
+            this.country = _t.country;
+            this.currency = _t.currency;
+            this.name = _t.name;
+            this.value = _t.value;
+        }
+
+        public Security GetSecurity
+        {
+            get { return security; }
         }
 
         override public string ToString()

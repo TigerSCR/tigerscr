@@ -139,10 +139,7 @@ namespace Bloomberg
                     double px_last = fieldData.GetElementAsFloat64("PX_LAST");
                     string currency = fieldData.GetElementAsString("CRNCY");
                     string name = fieldData.GetElementAsString("NAME");
-                    Console.WriteLine("Isin : "+security+
-                                       "\nPX last : "+px_last+" Country: "+country+
-                                       " Currency: "+currency);
-
+                    
                     string[] securityTab = security.Split(' ');
                     if (securityTab.Length == 3)
                     {

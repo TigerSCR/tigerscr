@@ -104,7 +104,7 @@ namespace Bloomberg
 
         override public string ToString()
         {
-            return isin + " : " + name + " = " + value;
+            return isin + " : Pays : " + country + " Nom : " + name + " = " + value+" "+ currency;
         }
 
         public string ToSecurities()

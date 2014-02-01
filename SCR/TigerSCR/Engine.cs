@@ -45,7 +45,7 @@ namespace TigerSCR
                 }
                 else if (cell.Value == "equity")
                 {
-                    portfolio.Add(new Equity(cell.Previous.Value));
+                    portfolio.Add(new Equity(cell.Previous.Value,50));
                 }
             }
         }

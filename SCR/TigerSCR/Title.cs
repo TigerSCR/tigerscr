@@ -5,12 +5,10 @@ using System.Text;
 
 namespace TigerSCR
 {
-    public enum Security { equity, corp }
     public abstract class Title
     {
         private string isin;
-        private Security security;
-        private string countrySecurity;
+        private int qtty;
         private string country;
         private string name;
         private double value;
@@ -84,48 +82,41 @@ namespace TigerSCR
             "UNITED KINDGDOM"};
             #endregion
 
-        public Title(string _isin, string _countrySecurity ,Security _security)
+        public Title(string _isin, int _qtty)
         {
             this.isin = _isin;
-            this.countrySecurity = _countrySecurity;
-            this.security = _security;
+            this.qtty = _qtty;
         }
 
-        public Title(string _isin, string _countrySecurity, Security _security, string country, string currency, string name, double value)
+        public Title(string _isin, int _qtty, string country, string currency, string name, double value)
         {
             this.isin = _isin;
-            this.countrySecurity = _countrySecurity;
-            this.security = _security;
+            this.qtty = _qtty;
             this.country = country;
             this.currency = currency;
             this.name = name;
             this.value = value;
         }
 
-        public Title(Title _t)
+        /*Normalement le copie constructeur fait déjà ça en C#
+         * public Title(Title _t)
         {
             this.isin = _t.isin;
-            this.countrySecurity = _t.countrySecurity;
-            this.security = _t.security;
             this.country = _t.country;
             this.currency = _t.currency;
             this.name = _t.name;
             this.value = _t.value;
-        }
+        }*/
 
-        public Security GetSecurity
+
+        public string Isin
         {
-            get { return security; }
+            get{return this.isin;}
         }
 
         override public string ToString()
         {
             return isin + " : Pays : " + country + " Nom : " + name + " = " + value+" "+ currency;
-        }
-
-        public string ToSecurities()
-        {
-            return isin + " " + countrySecurity;
         }
     }
 }

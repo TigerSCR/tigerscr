@@ -31,6 +31,11 @@ namespace TigerSCR
             return engine;
         }
 
+        public void Update()
+        {
+            Connector.getConnector().getEquities(portfolio);
+        }
+
 
         public void getEquities()
         {
@@ -40,7 +45,7 @@ namespace TigerSCR
             {
                 if (cell.Value == null)
                 {
-                    MessageBox.Show("Fin de la feuille");
+                    MessageBox.Show("Fin de la feuille en "+cell.Address+"- Acquisition terminée");
                     break;
                 }
                 else if (cell.Value == "equity")

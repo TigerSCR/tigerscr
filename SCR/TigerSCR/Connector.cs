@@ -55,7 +55,7 @@ namespace TigerSCR
             }
         }
 
-        public void getEquity(List<Title> l_title)
+        public void getEquities(List<Title> l_title)
         {
             CorrelationID requestID = new CorrelationID(1);
             Service refDataSvc = session.GetService("//blp/refdata");

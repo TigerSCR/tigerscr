@@ -21,6 +21,7 @@ namespace TigerSCR
 
         private void portfolio_Click(object sender, RibbonControlEventArgs e)
         {
+            Engine.getEngine().Update();
             MessageBox.Show(Engine.getEngine().ToString());
         }
     }

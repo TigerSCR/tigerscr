@@ -11,7 +11,7 @@ namespace TigerSCR
             : base(_isin,_qtty)
         {}
 
-        public Equity(string _isin, int _qtty, string _countrySecurity, string country, string currency, string name, double value)
+        public Equity(string _isin, int _qtty, string country, string currency, string name, double value)
             : base(_isin, _qtty, country, currency, name, value)
         {}
 

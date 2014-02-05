@@ -55,7 +55,7 @@ namespace TigerSCR
             }
         }
 
-        public string ToString()
+        public override string ToString()
         {
             string result="";
             result += "EQUITIES\n";

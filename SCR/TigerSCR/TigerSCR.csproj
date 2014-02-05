@@ -204,6 +204,7 @@
       <DependentUpon>ThisAddIn.Designer.xml</DependentUpon>
     </Compile>
     <AppDesigner Include="Properties\" />
+    <None Include="TigerSCR_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\go.jpg" />
@@ -222,7 +223,7 @@
     <ManifestKeyFile>TigerSCR_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>337CED33A5F769E8AD781D7691E12B3AC141F67C</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>FA7C83434FAD8F9363613B2D4C3A81789F8A11D3</ManifestCertificateThumbprint>
   </PropertyGroup>
   <!-- Include the build rules for a C# project. -->
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

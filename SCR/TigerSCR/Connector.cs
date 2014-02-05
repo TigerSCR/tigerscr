@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-//using Bloomberglp.Blpapi;
-using BEmu;
+using Bloomberglp.Blpapi;
+//using BEmu;
 
 namespace TigerSCR
 {
@@ -96,9 +96,9 @@ namespace TigerSCR
                     }
                 }
 
-                foreach (Equity equit in l_title)
+                foreach (Title title in l_title)
                 {
-                    Console.WriteLine(equit.ToString());
+                    Console.WriteLine(title.ToString());
                 }
                 Console.ReadKey();
             }
@@ -115,6 +115,7 @@ namespace TigerSCR
                     throw new Exception("responseError " + ReferenceDataResponse.ToString());
                 }
                 Element securityDataArray = ReferenceDataResponse.GetElement("securityData");
+                Console.WriteLine(message.ToString());
                 ParseDataArray(securityDataArray, l_title);
             }
         }
@@ -139,14 +140,10 @@ namespace TigerSCR
                     double px_last = fieldData.GetElementAsFloat64("PX_LAST");
                     string currency = fieldData.GetElementAsString("CRNCY");
                     string name = fieldData.GetElementAsString("NAME");
-                    
-                    string[] securityTab = security.Split(' ');
-                    if (securityTab.Length == 3)
-                    {
-                        Equity equit = new Equity(securityTab[0],50, securityTab[1], country, currency, name, px_last);
-                        l_title.RemoveAt(0);
-                        l_title.Add(equit);
-                    }
+
+                    Equity equit = new Equity(security, 50, country, currency, name, px_last);
+                    l_title.RemoveAt(0);
+                    l_title.Add(equit);
                 }
             }
         }

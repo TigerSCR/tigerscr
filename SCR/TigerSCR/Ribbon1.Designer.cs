@@ -75,7 +75,6 @@
             // init
             // 
             this.init.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.init.Image = global::TigerSCR.Properties.Resources.go;
             this.init.Label = "Init";
             this.init.Name = "init";
             this.init.ShowImage = true;

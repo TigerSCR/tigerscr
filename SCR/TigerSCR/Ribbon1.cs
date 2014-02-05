@@ -16,12 +16,11 @@ namespace TigerSCR
 
         private void init_Click(object sender, RibbonControlEventArgs e)
         {
-            Engine.getEngine().getEquities();
+            Engine.getEngine().Update();
         }
 
         private void portfolio_Click(object sender, RibbonControlEventArgs e)
         {
-            Engine.getEngine().Update();
             MessageBox.Show(Engine.getEngine().ToString());
         }
     }

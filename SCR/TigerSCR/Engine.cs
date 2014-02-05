@@ -16,6 +16,7 @@ namespace TigerSCR
 
         //Runtime var
         private List<Title> portfolio;
+        private Dictionary<string,int> isins;
 
         private Engine()
         {
@@ -33,25 +34,26 @@ namespace TigerSCR
 
         public void Update()
         {
-            Connector.getConnector().getEquities(portfolio);
+            this.getIsin();
+            //Connector.getConnector().getEquities(portfolio);
         }
 
 
-        public void getEquities()
+        public void getIsin()
         {
-            Excel.Range r = activeWorksheet.get_Range("A:B");
+            Excel.Range r = activeWorksheet.get_Range("A:A");
 
             foreach (Excel.Range cell in r.Cells)
             {
                 if (cell.Value == null)
-                {
-                    MessageBox.Show("Fin de la feuille en "+cell.Address+"- Acquisition terminée");
+                {;
+                    MessageBox.Show("Fin de la feuille en ["+cell.get_Address()+"] - Acquisition terminée avec "+this.isins.Count+" Codes");
                     break;
                 }
-                else if (cell.Value == "equity")
-                {
-                    portfolio.Add(new Equity(cell.Previous.Value,50));
-                }
+               /* else
+                {   cell.get_Address();
+                    isins.Add(cell.Value2, ;
+                }*/
             }
         }
 

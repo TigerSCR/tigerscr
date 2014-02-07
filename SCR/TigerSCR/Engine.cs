@@ -75,7 +75,6 @@ namespace TigerSCR
             //filling the global isins dictionary
             for(int i=0;i<listisins.Count();i++)
             {
-                if(i%2==1)
                     isins.Add(listisins[i],listqtty[i]);
             }
 

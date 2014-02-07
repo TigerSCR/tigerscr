@@ -13,8 +13,8 @@ namespace TigerSCR
         private string name;
         private double value;
         private string currency;
-        private bool ocde;
-        private bool ue;
+        //private bool ocde;
+        //private bool ue;
 
         #region donnees
         List<string> l_ocde = new List<string>{

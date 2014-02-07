@@ -16,7 +16,7 @@ namespace TigerSCR
 
         //Runtime var
         private List<Title> portfolio;
-        private Dictionary<string,int> isins;
+        private Dictionary<string,int> isins=new Dictionary<string,int>();
 
         private Engine()
         {
@@ -35,26 +35,64 @@ namespace TigerSCR
         public void Update()
         {
             this.getIsin();
+            Array temp =this.isins.ToArray();
+            foreach (Object o in temp)
+            {
+                MessageBox.Show(o.ToString());
+            }
             //Connector.getConnector().getEquities(portfolio);
         }
 
 
         public void getIsin()
         {
-            Excel.Range r = activeWorksheet.get_Range("A:A");
+            
+            //Get all the used cells
+            Excel.Range r = activeWorksheet.UsedRange;
 
-            foreach (Excel.Range cell in r.Cells)
+            List<String> listisins=new List<string>();
+            List<int> listqtty=new List<int>();
+            int count=0;
+
+            //Put the used cell in two different list according to their parity
+            foreach(Excel.Range cell in r.Cells)
+            {
+                count++;
+                if(count%2==1)
+                    listisins.Add(cell.Value2);
+                else
+                    listqtty.Add((int)cell.Value2);
+            }
+
+
+            //Checking the concordance of the two list, each isin must have a concording qqty
+            if(listisins.Count()!=listqtty.Count())
+            {
+                ArgumentException except=new ArgumentException();
+                throw except;
+            }
+
+            //filling the global isins dictionary
+            for(int i=0;i<listisins.Count();i++)
+            {
+                if(i%2==1)
+                    isins.Add(listisins[i],listqtty[i]);
+            }
+
+            MessageBox.Show("Acquisition terminée avec " + this.isins.Count() + " Codes");
+
+            /*foreach (Excel.Range cell in r.Cells)
             {
                 if (cell.Value == null)
-                {;
+                {
                     MessageBox.Show("Fin de la feuille en ["+cell.get_Address()+"] - Acquisition terminée avec "+this.isins.Count+" Codes");
                     break;
                 }
-               /* else
+                else
                 {   cell.get_Address();
                     isins.Add(cell.Value2, ;
-                }*/
-            }
+                }
+            }*/
         }
 
         public override string ToString()

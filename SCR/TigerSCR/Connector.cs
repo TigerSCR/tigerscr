@@ -96,7 +96,7 @@ namespace TigerSCR
             {
                 if (d_title.TryGetValue(title.Isin, out qtty))
                 {
-                    title.setQtty(qtty);
+                    title.Qtty=qtty;
                 }
                 else
                 {

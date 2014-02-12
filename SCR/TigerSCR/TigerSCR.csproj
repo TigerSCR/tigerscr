@@ -164,8 +164,10 @@
   -->
   <ItemGroup>
     <Compile Include="Connector.cs" />
+    <Compile Include="Corp.cs" />
     <Compile Include="Equity.cs" />
     <Compile Include="Engine.cs" />
+    <Compile Include="MathEngine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

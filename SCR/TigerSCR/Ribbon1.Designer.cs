@@ -37,21 +37,25 @@
             this.tab1 = this.Factory.CreateRibbonTab();
             this.readme = this.Factory.CreateRibbonGroup();
             this.notice = this.Factory.CreateRibbonLabel();
-            this.equity = this.Factory.CreateRibbonGroup();
+            this.acquisition = this.Factory.CreateRibbonGroup();
             this.init = this.Factory.CreateRibbonButton();
-            this.toString = this.Factory.CreateRibbonGroup();
+            this.affichage = this.Factory.CreateRibbonGroup();
             this.portfolio = this.Factory.CreateRibbonButton();
+            this.calculs = this.Factory.CreateRibbonGroup();
+            this.go = this.Factory.CreateRibbonButton();
             this.tab1.SuspendLayout();
             this.readme.SuspendLayout();
-            this.equity.SuspendLayout();
-            this.toString.SuspendLayout();
+            this.acquisition.SuspendLayout();
+            this.affichage.SuspendLayout();
+            this.calculs.SuspendLayout();
             // 
             // tab1
             // 
             this.tab1.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
             this.tab1.Groups.Add(this.readme);
-            this.tab1.Groups.Add(this.equity);
-            this.tab1.Groups.Add(this.toString);
+            this.tab1.Groups.Add(this.acquisition);
+            this.tab1.Groups.Add(this.affichage);
+            this.tab1.Groups.Add(this.calculs);
             this.tab1.Label = "Tiger SCR";
             this.tab1.Name = "tab1";
             // 
@@ -66,31 +70,41 @@
             this.notice.Label = "1. Cliquez sur Init";
             this.notice.Name = "notice";
             // 
-            // equity
+            // acquisition
             // 
-            this.equity.Items.Add(this.init);
-            this.equity.Label = "Equity";
-            this.equity.Name = "equity";
+            this.acquisition.Items.Add(this.init);
+            this.acquisition.Label = "Acquisition";
+            this.acquisition.Name = "acquisition";
             // 
             // init
             // 
-            this.init.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
             this.init.Label = "Init";
             this.init.Name = "init";
-            this.init.ShowImage = true;
             this.init.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.init_Click);
             // 
-            // toString
+            // affichage
             // 
-            this.toString.Items.Add(this.portfolio);
-            this.toString.Label = "toString";
-            this.toString.Name = "toString";
+            this.affichage.Items.Add(this.portfolio);
+            this.affichage.Label = "Affichage";
+            this.affichage.Name = "affichage";
             // 
             // portfolio
             // 
             this.portfolio.Label = "portfolio";
             this.portfolio.Name = "portfolio";
             this.portfolio.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.portfolio_Click);
+            // 
+            // calculs
+            // 
+            this.calculs.Items.Add(this.go);
+            this.calculs.Label = "Calculs";
+            this.calculs.Name = "calculs";
+            // 
+            // go
+            // 
+            this.go.Label = "GO";
+            this.go.Name = "go";
+            this.go.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.go_Click);
             // 
             // Ribbon1
             // 
@@ -102,22 +116,26 @@
             this.tab1.PerformLayout();
             this.readme.ResumeLayout(false);
             this.readme.PerformLayout();
-            this.equity.ResumeLayout(false);
-            this.equity.PerformLayout();
-            this.toString.ResumeLayout(false);
-            this.toString.PerformLayout();
+            this.acquisition.ResumeLayout(false);
+            this.acquisition.PerformLayout();
+            this.affichage.ResumeLayout(false);
+            this.affichage.PerformLayout();
+            this.calculs.ResumeLayout(false);
+            this.calculs.PerformLayout();
 
         }
 
         #endregion
 
         internal Microsoft.Office.Tools.Ribbon.RibbonTab tab1;
-        internal Microsoft.Office.Tools.Ribbon.RibbonGroup equity;
+        internal Microsoft.Office.Tools.Ribbon.RibbonGroup acquisition;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton init;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup readme;
         internal Microsoft.Office.Tools.Ribbon.RibbonLabel notice;
-        internal Microsoft.Office.Tools.Ribbon.RibbonGroup toString;
+        internal Microsoft.Office.Tools.Ribbon.RibbonGroup affichage;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton portfolio;
+        internal Microsoft.Office.Tools.Ribbon.RibbonGroup calculs;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton go;
     }
 
     partial class ThisRibbonCollection

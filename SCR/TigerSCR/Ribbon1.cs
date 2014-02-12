@@ -23,5 +23,10 @@ namespace TigerSCR
         {
             MessageBox.Show(Engine.getEngine().ToString());
         }
+
+        private void go_Click(object sender, RibbonControlEventArgs e)
+        {
+            Engine.getEngine().calculate();
+        }
     }
 }

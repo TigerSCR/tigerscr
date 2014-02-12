@@ -94,6 +94,11 @@ namespace TigerSCR
             this.portfolio = Connector.getConnector().getInfo(this.isins);
         }
 
+        public void calculate()
+        {
+            MathEngine.getEngine().equity(this.portfolio);
+        }
+
         public override string ToString()
         {
             string result="";

@@ -13,8 +13,6 @@ namespace TigerSCR
         private string name;
         private double value;
         private string currency;
-        //private bool ocde;
-        //private bool ue;
 
         #region donnees
         List<string> l_ocde = new List<string>{
@@ -97,16 +95,6 @@ namespace TigerSCR
             this.name = name;
             this.value = value;
         }
-
-        /*Normalement le copie constructeur fait déjà ça en C#
-         * public Title(Title _t)
-        {
-            this.isin = _t.isin;
-            this.country = _t.country;
-            this.currency = _t.currency;
-            this.name = _t.name;
-            this.value = _t.value;
-        }*/
 
 
         public string Isin

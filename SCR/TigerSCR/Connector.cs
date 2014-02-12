@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
 using Bloomberglp.Blpapi;
 //using BEmu;
 
@@ -13,9 +12,20 @@ namespace TigerSCR
         private static Connector _instance;
         static readonly object instanceLock = new object();
 
-        private Session session;
+        static private Session session;
+        private Service refDataSvc;
         private SessionOptions sessionOptions;
-        private Request request;
+        static private Request request;
+        static private List<Title> l_title;
+        //delegate void (Element fieldData, string security);
+
+        static private bool isGetType;
+        //public struct IsinType 
+        //{ 
+        //    public string isin;
+        //    public int qt; 
+        //    public Security secu;
+        //}
 
         private Connector()
         {
@@ -34,7 +44,7 @@ namespace TigerSCR
             return _instance;
         }
 
-        public void OpenSession()
+        private void OpenSession()
         {
             sessionOptions = new SessionOptions();
             sessionOptions.ServerHost = "localhost";
@@ -53,12 +63,7 @@ namespace TigerSCR
                 "//blp/refdata");
                 System.Environment.Exit(1);
             }
-        }
-
-        public void getEquities(List<Title> l_title)
-        {
-            CorrelationID requestID = new CorrelationID(1);
-            Service refDataSvc = session.GetService("//blp/refdata");
+            refDataSvc = session.GetService("//blp/refdata");
             if (refDataSvc == null)
             {
                 Console.WriteLine("Cannot get service");
@@ -66,47 +71,65 @@ namespace TigerSCR
             else
             {
                 request = refDataSvc.CreateRequest("ReferenceDataRequest");
+            }
+        }
 
-                foreach (Title title in l_title)
-                {
-                    request.Append("securities", "/isin/" + title.Isin);
+        static private void RequestEquity(string title)
+        {
+                    request.Append("securities", title);
+                    request.Append("fields", "MARKET_SECTOR_DES");
                     request.Append("fields", "PX_LAST");
                     request.Append("fields", "CRNCY");
                     request.Append("fields", "COUNTRY");
-                    request.Append("fields", "NAME"); 
-                }
+                    request.Append("fields", "NAME");
+        }
 
-                session.SendRequest(request, requestID);
-                bool continueToLoop = true;
-                while (continueToLoop)
-                {
-                    Event eventObj = session.NextEvent();
-                    switch (eventObj.Type)
-                    {
-                        case Event.EventType.RESPONSE: // final event
-                            continueToLoop = false;
-                            handleResponseEvent(eventObj, l_title);
-                            break;
-                        case Event.EventType.PARTIAL_RESPONSE:
-                            handleResponseEvent(eventObj, l_title);
-                            break;
-                        default:
-                            handleOtherEvent(eventObj); 
-                            break;
-                    }
-                }
+        public List<Title> getInfo(Dictionary<string, int> d_title)
+        {
+            isGetType = true;
+            l_title = new List<Title>();
+            foreach (string title in d_title.Keys)
+            {
+                request.Append("securities", "/isin/" + title);
+                request.Append("fields", "MARKET_SECTOR_DES");
+            }
+            ResponseLoop(); // Recupère les secteurs de marché
+            ResponseLoop(); // Recupère les actions propres au secteur
+            return l_title;
+        }
 
-                foreach (Title title in l_title)
+        private void ResponseLoop()
+        {
+            session.SendRequest(request, new CorrelationID(1)); ;
+            request = refDataSvc.CreateRequest("ReferenceDataRequest"); //Remet à zero la request qui sera rempli après.
+            bool continueToLoop = true;
+            while (continueToLoop)
+            {
+                Event eventObj = session.NextEvent();
+                switch (eventObj.Type)
                 {
-                    Console.WriteLine(title.ToString());
+                    case Event.EventType.RESPONSE: // final event
+                        continueToLoop = false;
+                        handleResponseEvent(eventObj);
+                        break;
+                    case Event.EventType.PARTIAL_RESPONSE:
+                        handleResponseEvent(eventObj);
+                        break;
+                    default:
+                        handleOtherEvent(eventObj);
+                        break;
                 }
-                Console.ReadKey();
+            }
+
+            foreach (Title title in l_title)
+            {
+                Console.WriteLine(title.ToString());
             }
         }
-        
 
-        private static void handleResponseEvent(Event eventObj, List<Title> l_title)
+        private static void handleResponseEvent(Event eventObj)
         {
+            string marketSector;
             foreach (Message message in eventObj.GetMessages())
             {
                 Element ReferenceDataResponse = message.AsElement;
@@ -116,37 +139,56 @@ namespace TigerSCR
                 }
                 Element securityDataArray = ReferenceDataResponse.GetElement("securityData");
                 Console.WriteLine(message.ToString());
-                ParseDataArray(securityDataArray, l_title);
-            }
-        }
 
-        private static void ParseDataArray(Element securityDataArray, List<Title> l_title)
-        {
-            int numItems = securityDataArray.NumValues;
-            for (int i = 0; i < numItems; ++i)
+                int numItems = securityDataArray.NumValues;
+                for (int i = 0; i < numItems; ++i)
+                {
+                    Element securityData = securityDataArray.GetValueAsElement(i);
+                    string security = securityData.GetElementAsString("security");
+                    //int sequenceNumber = securityData.GetElementAsInt32("sequenceNumber");
+                    if (securityData.HasElement("securityError"))
+                    {
+                        Element securityError = securityData.GetElement("securityError");
+                        throw new Exception("securityError " + securityError.ToString());
+                    }
+                    else
+                    {
+                        Element fieldData = securityData.GetElement("fieldData");
+                        marketSector = fieldData.GetElementAsString("MARKET_SECTOR_DES");
+                        switch (marketSector)
+                        {
+                            case "Equity":
+                                if (isGetType)
+                                    RequestEquity(security);
+                                else
+                                    ParseEquity(fieldData, security);
+                            break;
+
+                            default:
+                            throw new FormatException("market sector invalid: " + marketSector);
+                        }
+                    }
+                }
+            }
+            if (isGetType)
             {
-                Element securityData = securityDataArray.GetValueAsElement(i);
-                string security = securityData.GetElementAsString("security");
-                int sequenceNumber = securityData.GetElementAsInt32("sequenceNumber");
-                if (securityData.HasElement("securityError"))
-                {
-                    Element securityError = securityData.GetElement("securityError");
-                    throw new Exception("securityError " + securityError.ToString());
-                }
-                else
-                {
-                    Element fieldData = securityData.GetElement("fieldData");
-                    string country = fieldData.GetElementAsString("COUNTRY");
-                    double px_last = fieldData.GetElementAsFloat64("PX_LAST");
-                    string currency = fieldData.GetElementAsString("CRNCY");
-                    string name = fieldData.GetElementAsString("NAME");
-
-                    Equity equit = new Equity(security, 50, country, currency, name, px_last);
-                    l_title.RemoveAt(0);
-                    l_title.Add(equit);
-                }
+                session.SendRequest(request, new CorrelationID(2));
+                isGetType = false;
             }
         }
+        #region Parser
+        private static void ParseEquity(Element fieldData, string security)
+        {
+            string country = fieldData.GetElementAsString("COUNTRY");
+            double px_last = fieldData.GetElementAsFloat64("PX_LAST");
+            string currency = fieldData.GetElementAsString("CRNCY");
+            string name = fieldData.GetElementAsString("NAME");
+
+            Equity equit = new Equity(security, 50, country, currency, name, px_last);
+            //l_title.RemoveAt(0);
+            l_title.Add(equit);
+        }
+        #endregion 
 
         private static void handleOtherEvent(Event eventObj)
         {

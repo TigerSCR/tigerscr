@@ -34,13 +34,21 @@ namespace TigerSCR
 
         public void Update()
         {
+            string s = "";
             this.getIsin();
             Array temp =this.isins.ToArray();
             foreach (Object o in temp)
             {
-                MessageBox.Show(o.ToString());
+                s+=o.ToString();
             }
-            //Connector.getConnector().getEquities(portfolio);
+            MessageBox.Show(s);
+            s = "";
+            this.getTitle();
+            foreach (Title t in this.portfolio)
+            {
+                s+=t.ToString();
+            }
+            MessageBox.Show(s);
         }
 
 
@@ -79,19 +87,11 @@ namespace TigerSCR
             }
 
             MessageBox.Show("Acquisition terminée avec " + this.isins.Count() + " Codes");
+        }
 
-            /*foreach (Excel.Range cell in r.Cells)
-            {
-                if (cell.Value == null)
-                {
-                    MessageBox.Show("Fin de la feuille en ["+cell.get_Address()+"] - Acquisition terminée avec "+this.isins.Count+" Codes");
-                    break;
-                }
-                else
-                {   cell.get_Address();
-                    isins.Add(cell.Value2, ;
-                }
-            }*/
+        public void getTitle()
+        {
+            this.portfolio = Connector.getConnector().getInfo(this.isins);
         }
 
         public override string ToString()

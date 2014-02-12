@@ -104,23 +104,28 @@ namespace TigerSCR
                 this.eu = true;
         }
 
-
+        #region Accesseurs
         public string Isin
         {
             get{return this.isin;}
         }
 
-        public void setQtty(int qtty)
+        public int Qtty
         {
-            this.qtty = qtty;
+            get { return this.qtty; }
+            set { this.qtty = value; }
         }
 
+        public double Value
+        { get { return this.value; } }
+        
         public bool Oecd
         { get { return this.oecd; } }
         public bool Eu
         { get { return this.eu; } }
         public bool Strategic
         { get { return this.strategic; } }
+        #endregion
 
         override public string ToString()
         {

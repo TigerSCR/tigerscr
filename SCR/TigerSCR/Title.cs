@@ -13,8 +13,8 @@ namespace TigerSCR
         private string name;
         private double value;
         private string currency;
-        private bool oecd { get; }
-        private bool eu { get; }
+        private bool oecd;
+        private bool eu;
         private bool strategic = false;
 
 
@@ -114,6 +114,13 @@ namespace TigerSCR
         {
             this.qtty = qtty;
         }
+
+        public bool Oecd
+        { get { return this.oecd; } }
+        public bool Eu
+        { get { return this.eu; } }
+        public bool Strategic
+        { get { return this.strategic; } }
 
         override public string ToString()
         {

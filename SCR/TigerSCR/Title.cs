@@ -102,6 +102,11 @@ namespace TigerSCR
             get{return this.isin;}
         }
 
+        public void setQtty(int qtty)
+        {
+            this.qtty = qtty;
+        }
+
         override public string ToString()
         {
             return isin + " : Pays : " + country + " Nom : " + name + " = " + value+" "+ currency;

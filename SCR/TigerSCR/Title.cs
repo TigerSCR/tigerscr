@@ -13,71 +13,75 @@ namespace TigerSCR
         private string name;
         private double value;
         private string currency;
+        private bool oecd { get; }
+        private bool eu { get; }
+        private bool strategic = false;
+
 
         #region donnees
-        List<string> l_ocde = new List<string>{
-            "AUSTRALIA",
-            "AUSTRIA",
-            "BELGIUM",
-            "CANADA",
-            "CHILE",
-            "CZECH REPUBLIC",
-            "DENMARK",
-            "ESTONIA",
-            "FINLAND",
-            "FRANCE",
-            "GERMANY",
-            "GREECE",
-            "HUNGARY",
-            "ICELAND",
-            "IRLAND",
-            "ISRAEL",
-            "ITALY",
-            "JAPAN",
-            "KOREA",
-            "LUXEMBOURG",
-            "MEXICO",
-            "NETHERLANDS",
-            "NEW ZEALAND",
-            "NORWAY",
-            "POLAND",
-            "PORTUGAL",
-            "SLOVAKIA",
-            "SLOVENIA",
-            "SPAIN",
-            "SWEDEN",
-            "SWITZERLAND",
-            "TURKEY",
-            "UNITED KINGDOM",
-            "UNITED STATES"};
-        List<string> l_ue = new List<string>{
-            "AUSTRIA",
-            "BELGIUM",
-            "BULGARIA",
-            "CROATIA",
-            "CYPRUS",
-            "CZECH REPUBLIC",
-            "ESTONIA",
-            "FINLAND",
-            "FRANCE",
-            "GERMANY",
-            "GREECE",
-            "HUNGARY",
-            "IRLAND",
-            "ITALY",
-            "LATVIA",
-            "LITHUANIA",
-            "LUXEMBOURG",
-            "MALTA",
-            "NETHERLANDS",
-            "POLAND",
-            "PORTUGAl",
-            "ROMANIA",
-            "SLOVAKIA",
-            "SLOVENIA",
-            "SPAIN",
-            "SWEDEN",
-            "UNITED KINDGDOM"};
+        private List<string> l_oecd = new List<string>{
+            "AU",
+            "AT",
+            "BE",
+            "CA",
+            "CL",
+            "CZ",
+            "DK",
+            "EE",
+            "FI",
+            "FR",
+            "DE",
+            "GR",
+            "HU",
+            "IS",
+            "IE",
+            "IL",
+            "IT",
+            "JP",
+            "KR",
+            "LU",
+            "MX",
+            "NL",
+            "NZ",
+            "NO",
+            "PL",
+            "PT",
+            "SK",
+            "SI",
+            "ES",
+            "SE",
+            "CH",
+            "TR",
+            "GB",
+            "US"};
+        private List<string> l_eu = new List<string>{
+            "AU",
+            "BE",
+            "BG",
+            "HR",
+            "CY",
+            "CZ",
+            "EE",
+            "FI",
+            "FR",
+            "DE",
+            "GR",
+            "HU",
+            "IE",
+            "IT",
+            "LV",
+            "LT",
+            "LU",
+            "MT",
+            "NL",
+            "PL",
+            "PT",
+            "RO",
+            "SK",
+            "SI",
+            "ES",
+            "SE",
+            "GB"};
             #endregion
 
         public Title(string _isin, int _qtty)
@@ -94,6 +98,10 @@ namespace TigerSCR
             this.currency = currency;
             this.name = name;
             this.value = value;
+            if (l_oecd.Contains(this.country))
+                this.oecd = true;
+            if (l_eu.Contains(this.country))
+                this.eu = true;
         }
 
 

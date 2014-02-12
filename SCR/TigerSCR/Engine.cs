@@ -49,6 +49,9 @@ namespace TigerSCR
                 s+=t.ToString();
             }
             MessageBox.Show(s);
+
+            //raz des isins pour prochain init
+            this.isins = new Dictionary<string, int>();
         }
 
 
@@ -96,7 +99,7 @@ namespace TigerSCR
 
         public void calculate()
         {
-            MathEngine.getEngine().equity(this.portfolio);
+            Repartiteur.getEngine().equity(this.portfolio);
         }
 
         public override string ToString()

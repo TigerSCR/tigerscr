@@ -201,8 +201,9 @@ namespace TigerSCR
         {
             request.Append("securities", title);
             request.Append("fields", "MARKET_SECTOR_DES");
-            request.Append("fields", "WORKOUT_DT_BID");
-            request.Append("fields", "ISSUE_DT");
+            request.Append("fields", "PX_LAST");
+            request.Append("fields", "CRNCY");
+            request.Append("fields", "COUNTRY_ISO");
             request.Append("fields", "NAME");
         }
 
@@ -221,9 +222,8 @@ namespace TigerSCR
         {
             request.Append("securities", title);
             request.Append("fields", "MARKET_SECTOR_DES");
-            request.Append("fields", "PX_LAST");
-            request.Append("fields", "CRNCY");
-            request.Append("fields", "COUNTRY_ISO");
+            request.Append("fields", "WORKOUT_DT_BID");
+            request.Append("fields", "ISSUE_DT");
             request.Append("fields", "NAME");
         }
 

@@ -17,21 +17,18 @@ namespace TigerSCR
         private SessionOptions sessionOptions;
         static private Request request;
         static private List<Title> l_title;
-        //delegate void (Element fieldData, string security);
 
         static private bool isGetType;
-        //public struct IsinType 
-        //{ 
-        //    public string isin;
-        //    public int qt; 
-        //    public Security secu;
-        //}
 
         private Connector()
         {
             OpenSession();
         }
 
+        /// <summary>
+        /// Pattern singleton : connecteur unique
+        /// </summary>
+        /// <returns>connecteur avec liaison BL étblie</returns>
         public static Connector getConnector()
         {
             lock (instanceLock)
@@ -44,6 +41,9 @@ namespace TigerSCR
             return _instance;
         }
 
+        /// <summary>
+        /// Etablie la connection avec Bloomberg
+        /// </summary>
         private void OpenSession()
         {
             sessionOptions = new SessionOptions();
@@ -74,16 +74,11 @@ namespace TigerSCR
             }
         }
 
-        static private void RequestEquity(string title)
-        {
-                    request.Append("securities", title);
-                    request.Append("fields", "MARKET_SECTOR_DES");
-                    request.Append("fields", "PX_LAST");
-                    request.Append("fields", "CRNCY");
-                    request.Append("fields", "COUNTRY");
-                    request.Append("fields", "NAME");
-        }
-
+        /// <summary>
+        /// Recupère les info specifiques des differents ISIN
+        /// </summary>
+        /// <param name="d_title">Isin avec leurs quantité</param>
+        /// <returns>la liste de Titre avec les informations remplit</returns>
         public List<Title> getInfo(Dictionary<string, int> d_title)
         {
             isGetType = true;
@@ -95,9 +90,26 @@ namespace TigerSCR
             }
             ResponseLoop(); // Recupère les secteurs de marché
             ResponseLoop(); // Recupère les actions propres au secteur
+
+            int qtty;
+            foreach (Title title in l_title)
+            {
+                if (d_title.TryGetValue(title.Isin, out qtty))
+                {
+                    title.setQtty(qtty);
+                }
+                else
+                {
+                    throw new KeyNotFoundException(title.Isin + " not found");
+                }
+            }
+
             return l_title;
         }
 
+        /// <summary>
+        /// Envoi les requêtes PREPARES à l'avance, et recupère les infos.
+        /// </summary>
         private void ResponseLoop()
         {
             session.SendRequest(request, new CorrelationID(1)); ;
@@ -120,13 +132,12 @@ namespace TigerSCR
                         break;
                 }
             }
-
-            foreach (Title title in l_title)
-            {
-                Console.WriteLine(title.ToString());
-            }
         }
 
+        /// <summary>
+        /// Filtre la reponse pour les stocker dans des objets de types TITLE
+        /// </summary>
+        /// <param name="eventObj"></param>
         private static void handleResponseEvent(Event eventObj)
         {
             string marketSector;
@@ -138,7 +149,7 @@ namespace TigerSCR
                     throw new Exception("responseError " + ReferenceDataResponse.ToString());
                 }
                 Element securityDataArray = ReferenceDataResponse.GetElement("securityData");
-                Console.WriteLine(message.ToString());
+                //Console.WriteLine(message.ToString());
 
                 int numItems = securityDataArray.NumValues;
                 for (int i = 0; i < numItems; ++i)
@@ -164,6 +175,13 @@ namespace TigerSCR
                                     ParseEquity(fieldData, security);
                             break;
 
+                            case "Corp":
+                            if (isGetType)
+                                RequestCorp(security);
+                            else
+                                ParseCorp(fieldData, security);
+                            break;
+
                             default:
                             throw new FormatException("market sector invalid: " + marketSector);
                         }
@@ -172,42 +190,74 @@ namespace TigerSCR
             }
             if (isGetType)
             {
-                session.SendRequest(request, new CorrelationID(2));
                 isGetType = false;
             }
         }
-        #region Parser
+
+
+        #region Sector
+
+        static private void RequestEquity(string title)
+        {
+            request.Append("securities", title);
+            request.Append("fields", "MARKET_SECTOR_DES");
+            request.Append("fields", "WORKOUT_DT_BID");
+            request.Append("fields", "ISSUE_DT");
+            request.Append("fields", "NAME");
+        }
+
         private static void ParseEquity(Element fieldData, string security)
         {
-            string country = fieldData.GetElementAsString("COUNTRY");
+            string country = fieldData.GetElementAsString("COUNTRY_ISO");
             double px_last = fieldData.GetElementAsFloat64("PX_LAST");
             string currency = fieldData.GetElementAsString("CRNCY");
             string name = fieldData.GetElementAsString("NAME");
 
-            Equity equit = new Equity(security, 50, country, currency, name, px_last);
-            //l_title.RemoveAt(0);
+            Equity equit = new Equity(security.Replace("/isin/",""), 0, country, currency, name, px_last);
             l_title.Add(equit);
         }
+
+        static private void RequestCorp(string title)
+        {
+            request.Append("securities", title);
+            request.Append("fields", "MARKET_SECTOR_DES");
+            request.Append("fields", "PX_LAST");
+            request.Append("fields", "CRNCY");
+            request.Append("fields", "COUNTRY_ISO");
+            request.Append("fields", "NAME");
+        }
+
+        private static void ParseCorp(Element fieldData, string security)
+        {
+            string dateBack = fieldData.GetElementAsString("WORKOUT_DT_BID");
+            string dateEmit = fieldData.GetElementAsString("ISSUE_DT");
+            string name = fieldData.GetElementAsString("NAME");
+
+            Corp corp = new Corp(security.Replace("/isin/", ""), 0, dateEmit, dateBack, name);
+            l_title.Add(corp);
+        }
+
         #endregion 
+
 
         private static void handleOtherEvent(Event eventObj)
         {
-            System.Console.WriteLine("EventType=" + eventObj.Type);
-            foreach (Message message in eventObj.GetMessages())
-            {
-                System.Console.WriteLine("correlationID=" +
-                message.CorrelationID);
-                System.Console.WriteLine("messageType=" +
-                message.MessageType);
-                Console.WriteLine(message.ToString());
-                if (Event.EventType.SESSION_STATUS == eventObj.Type
-                && message.MessageType.Equals("SessionTerminated"))
-                {
-                    System.Console.WriteLine("Terminating: " +
-                    message.MessageType);
-                    System.Environment.Exit(1);
-                }
-            }
+            //System.Console.WriteLine("EventType=" + eventObj.Type);
+            //foreach (Message message in eventObj.GetMessages())
+            //{
+            //    System.Console.WriteLine("correlationID=" +
+            //    message.CorrelationID);
+            //    System.Console.WriteLine("messageType=" +
+            //    message.MessageType);
+            //    Console.WriteLine(message.ToString());
+            //    if (Event.EventType.SESSION_STATUS == eventObj.Type
+            //    && message.MessageType.Equals("SessionTerminated"))
+            //    {
+            //        System.Console.WriteLine("Terminating: " +
+            //        message.MessageType);
+            //        System.Environment.Exit(1);
+            //    }
+            //}
         }
     }
 }

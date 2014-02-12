@@ -7,16 +7,24 @@ namespace TigerSCR
 {
     public class Corp : Title
     {
-        public Corp(string _isin, string _countrySecurity)
-            : base(_isin, _countrySecurity, Security.corp)
+        private string dateEmit;
+        private string dateBack;
+        private string name;
+        public Corp(string _isin, int _qtty, string dateEmit, string dateBack, string name)
+            : base(_isin,_qtty)
+        {
+            this.dateEmit = dateEmit;
+            this.dateBack = dateBack;
+            this.name = name;
+        }
+
+        public Corp(string _isin, int _qtty, string country, string currency, string name, double value)
+            : base(_isin, _qtty, country, currency, name, value)
         {}
 
-        public Corp(string _isin, string _countrySecurity, string country, string currency, string name, double value)
-            : base(_isin, _countrySecurity, Security.corp, country, currency, name, value)
-        {}
-
-        public Corp(Title _t)
-            : base(_t)
-        {}
+        public override string ToString()
+        {
+            return name + " DateEmit : " + dateEmit + " DateBack: " + dateBack;
+        }
     }
 }

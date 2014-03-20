@@ -10,8 +10,9 @@ namespace TigerSCR
     {
         private static DataConfig _instance;
         static readonly object instanceLock = new object();
-        private List<string> l_OCDE = new List<string>();
-        private List<string> l_UE = new List<string>();
+        private SortedSet<string> l_OCDE = new SortedSet<string>();
+        private SortedSet<string> l_UE = new SortedSet<string>();
+
         private DataConfig()
         {
             this.Load();
@@ -29,12 +30,12 @@ namespace TigerSCR
             return _instance;
         }
 
-        public List<string> ListOCDE
+        public SortedSet<string> ListOCDE
         {
             get { return l_OCDE; }
         }
 
-        public List<string> ListUE
+        public SortedSet<string> ListUE
         {
             get { return l_UE; }
         }

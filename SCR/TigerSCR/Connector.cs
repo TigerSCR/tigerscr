@@ -96,15 +96,27 @@ namespace TigerSCR
             {
                 if (d_title.TryGetValue(title.Isin, out qtty))
                 {
-                    title.Qtty=qtty;
+                    title.Qtty = qtty;
                 }
                 else
                 {
                     throw new KeyNotFoundException(title.Isin + " not found");
                 }
             }
-
             return l_title;
+        }
+
+        /// <summary>
+        /// Remplit la liste de titre par des valeurs par defaut quand la connection à Bl à echoué
+        /// </summary>
+        static public void Remplissage_Non_connection()
+        {
+            if (l_title.Count != 0)
+            {
+                l_title.Add(new Equity("US03938L1044", 0, "LU", "USD", "ARCELORMITTAL-NY REGISTERED", 15.65));
+                l_title.Add(new Equity("US76218Y1038", 0, "US", "USD", "RHINO RESOURCE PARTNERS LP", 13.08));
+                l_title.Add(new Corp("XS0643300717", 0, "2011-06-30", "2014-07-07", "RCI BANQUE SA"));
+            }
         }
 
         /// <summary>
@@ -146,7 +158,9 @@ namespace TigerSCR
                 Element ReferenceDataResponse = message.AsElement;
                 if (ReferenceDataResponse.HasElement("responseError"))
                 {
-                    throw new Exception("responseError " + ReferenceDataResponse.ToString());
+                    //throw new Exception("responseError " + ReferenceDataResponse.ToString());
+                    Console.WriteLine("Mode non connecté");
+                    Remplissage_Non_connection();
                 }
                 Element securityDataArray = ReferenceDataResponse.GetElement("securityData");
                 //Console.WriteLine(message.ToString());
@@ -197,13 +211,12 @@ namespace TigerSCR
 
         #region Sector
 
-        static private void RequestEquity(string title)
+        static private void RequestCorp(string title)
         {
             request.Append("securities", title);
             request.Append("fields", "MARKET_SECTOR_DES");
-            request.Append("fields", "PX_LAST");
-            request.Append("fields", "CRNCY");
-            request.Append("fields", "COUNTRY_ISO");
+            request.Append("fields", "WORKOUT_DT_BID");
+            request.Append("fields", "ISSUE_DT");
             request.Append("fields", "NAME");
         }
 
@@ -218,12 +231,13 @@ namespace TigerSCR
             l_title.Add(equit);
         }
 
-        static private void RequestCorp(string title)
+        static private void RequestEquity(string title)
         {
             request.Append("securities", title);
             request.Append("fields", "MARKET_SECTOR_DES");
-            request.Append("fields", "WORKOUT_DT_BID");
-            request.Append("fields", "ISSUE_DT");
+            request.Append("fields", "PX_LAST");
+            request.Append("fields", "CRNCY");
+            request.Append("fields", "COUNTRY_ISO");
             request.Append("fields", "NAME");
         }
 

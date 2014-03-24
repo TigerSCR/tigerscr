@@ -1,4 +1,4 @@
-﻿namespace WindowsFormsApplication2
+﻿namespace TigerSCR
 {
     partial class TigerSCR
     {

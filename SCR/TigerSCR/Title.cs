@@ -129,7 +129,7 @@ namespace TigerSCR
 
         override public string ToString()
         {
-            return isin + " : Pays : " + country + " Nom : " + name + " = " + value+" "+ currency;
+            return isin + " : Pays : " + country + " Nom : " + name + " = "+qtty+ "(" + value+" "+ currency+")";
         }
     }
 }

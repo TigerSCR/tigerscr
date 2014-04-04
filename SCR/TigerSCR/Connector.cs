@@ -17,6 +17,7 @@ namespace TigerSCR
         private SessionOptions sessionOptions;
         static private Request request;
         static private List<Title> l_title;
+        static List<Tuple<string, int, string>> d_title;
 
         static private bool isGetType;
 
@@ -50,23 +51,25 @@ namespace TigerSCR
             sessionOptions.ServerHost = "localhost";
             sessionOptions.ServerPort = 8194;
             session = new Session(sessionOptions);
+            l_title = new List<Title>();
             if (!session.Start())
             {
                 System.Console.WriteLine("Could not start session.");
                 Console.WriteLine(session.ToString());
-                Console.ReadKey();
-                System.Environment.Exit(1);
+                Remplissage_Non_connection();
+                return;
             }
             if (!session.OpenService("//blp/refdata"))
             {
                 System.Console.WriteLine("Could not open service " +
                 "//blp/refdata");
-                System.Environment.Exit(1);
+                return;
             }
             refDataSvc = session.GetService("//blp/refdata");
             if (refDataSvc == null)
             {
                 Console.WriteLine("Cannot get service");
+                return;
             }
             else
             {
@@ -79,13 +82,18 @@ namespace TigerSCR
         /// </summary>
         /// <param name="d_title">Isin avec leurs quantité</param>
         /// <returns>la liste de Titre avec les informations remplit</returns>
-        public List<Title> getInfo(Dictionary<string, int> d_title)
+        public List<Title> getInfo(List<Tuple<string, int, string>> _d_title)
         {
+            if (l_title.Count != 0)
+                return l_title;
+
+            d_title = _d_title;
             isGetType = true;
-            l_title = new List<Title>();
-            foreach (string title in d_title.Keys)
+            
+
+            foreach (var title in d_title)
             {
-                request.Append("securities", "/isin/" + title);
+                request.Append("securities", "/isin/" + title.Item1);
                 request.Append("fields", "MARKET_SECTOR_DES");
             }
             ResponseLoop(); // Recupère les secteurs de marché
@@ -94,13 +102,11 @@ namespace TigerSCR
             int qtty;
             foreach (Title title in l_title)
             {
-                if (d_title.TryGetValue(title.Isin, out qtty))
+                qtty = d_title.Find(delegate(Tuple<string, int, string> x) { return x.Item1 == title.Isin; }).Item2;
+                
+                if(qtty == 0)
                 {
-                    title.Qtty = qtty;
-                }
-                else
-                {
-                    throw new KeyNotFoundException(title.Isin + " not found");
+                    throw new NotFoundException(title.Isin + " not found");
                 }
             }
             return l_title;
@@ -111,7 +117,7 @@ namespace TigerSCR
         /// </summary>
         static public void Remplissage_Non_connection()
         {
-            if (l_title.Count != 0)
+            if (l_title.Count == 0)
             {
                 l_title.Add(new Equity("US03938L1044", 0, "LU", "USD", "ARCELORMITTAL-NY REGISTERED", 15.65));
                 l_title.Add(new Equity("US76218Y1038", 0, "US", "USD", "RHINO RESOURCE PARTNERS LP", 13.08));
@@ -179,7 +185,12 @@ namespace TigerSCR
                     else
                     {
                         Element fieldData = securityData.GetElement("fieldData");
-                        marketSector = fieldData.GetElementAsString("MARKET_SECTOR_DES");
+
+                        if (isGetType)
+                            marketSector = fieldData.GetElementAsString("MARKET_SECTOR_DES");
+                        else
+                            marketSector = d_title.Find(delegate(Tuple<string, int, string> x) { return x.Item1 == security.Replace("/isin/", ""); }).Item3;
+
                         switch (marketSector)
                         {
                             case "Equity":
@@ -208,13 +219,13 @@ namespace TigerSCR
             }
         }
 
-
         #region Sector
 
         static private void RequestCorp(string title)
         {
+            d_title[d_title.IndexOf(d_title.Find(delegate(Tuple<string, int, string> x) { return x.Item1 == title.Replace("/isin/", ""); }))].Item3 = "Corp";
             request.Append("securities", title);
-            request.Append("fields", "MARKET_SECTOR_DES");
+            //request.Append("fields", "MARKET_SECTOR_DES");
             request.Append("fields", "WORKOUT_DT_BID");
             request.Append("fields", "ISSUE_DT");
             request.Append("fields", "NAME");
@@ -234,7 +245,7 @@ namespace TigerSCR
         static private void RequestEquity(string title)
         {
             request.Append("securities", title);
-            request.Append("fields", "MARKET_SECTOR_DES");
+            //request.Append("fields", "MARKET_SECTOR_DES");
             request.Append("fields", "PX_LAST");
             request.Append("fields", "CRNCY");
             request.Append("fields", "COUNTRY_ISO");

@@ -17,7 +17,7 @@ namespace TigerSCR
         private SessionOptions sessionOptions;
         static private Request request;
         static private List<Title> l_title;
-        static List<Tuple<string, int, string>> d_title;
+        static Dictionary<string,Tuple<int, string>> d_title;
 
         static private bool isGetType;
 
@@ -87,11 +87,15 @@ namespace TigerSCR
             if (l_title.Count != 0)
                 return l_title;
 
-            d_title = _d_title;
+            d_title = new Dictionary<string, Tuple<int, string>>();
+            foreach (var tuple in _d_title)
+            {
+                d_title.Add(tuple.Item1, new Tuple<int, string>(tuple.Item2, tuple.Item3));
+            }
             isGetType = true;
             
 
-            foreach (var title in d_title)
+            foreach (var title in _d_title)
             {
                 request.Append("securities", "/isin/" + title.Item1);
                 request.Append("fields", "MARKET_SECTOR_DES");
@@ -102,7 +106,7 @@ namespace TigerSCR
             int qtty;
             foreach (Title title in l_title)
             {
-                qtty = d_title.Find(delegate(Tuple<string, int, string> x) { return x.Item1 == title.Isin; }).Item2;
+                qtty = d_title[title.Isin].Item1;
                 
                 if(qtty == 0)
                 {
@@ -175,7 +179,7 @@ namespace TigerSCR
                 for (int i = 0; i < numItems; ++i)
                 {
                     Element securityData = securityDataArray.GetValueAsElement(i);
-                    string security = securityData.GetElementAsString("security");
+                    string security = securityData.GetElementAsString("security").Replace("/isin/", "");
                     //int sequenceNumber = securityData.GetElementAsInt32("sequenceNumber");
                     if (securityData.HasElement("securityError"))
                     {
@@ -189,7 +193,7 @@ namespace TigerSCR
                         if (isGetType)
                             marketSector = fieldData.GetElementAsString("MARKET_SECTOR_DES");
                         else
-                            marketSector = d_title.Find(delegate(Tuple<string, int, string> x) { return x.Item1 == security.Replace("/isin/", ""); }).Item3;
+                            marketSector = d_title[security].Item2;
 
                         switch (marketSector)
                         {
@@ -223,8 +227,8 @@ namespace TigerSCR
 
         static private void RequestCorp(string title)
         {
-            d_title[d_title.IndexOf(d_title.Find(delegate(Tuple<string, int, string> x) { return x.Item1 == title.Replace("/isin/", ""); }))].Item3 = "Corp";
-            request.Append("securities", title);
+            d_title[title] = new Tuple<int,string>(d_title[title].Item1, "Corp");
+            request.Append("securities", "/isin/"+title);
             //request.Append("fields", "MARKET_SECTOR_DES");
             request.Append("fields", "WORKOUT_DT_BID");
             request.Append("fields", "ISSUE_DT");
@@ -238,7 +242,7 @@ namespace TigerSCR
             string currency = fieldData.GetElementAsString("CRNCY");
             string name = fieldData.GetElementAsString("NAME");
 
-            Equity equit = new Equity(security.Replace("/isin/",""), 0, country, currency, name, px_last);
+            Equity equit = new Equity(security, 0, country, currency, name, px_last);
             l_title.Add(equit);
         }
 
@@ -258,7 +262,7 @@ namespace TigerSCR
             string dateEmit = fieldData.GetElementAsString("ISSUE_DT");
             string name = fieldData.GetElementAsString("NAME");
 
-            Corp corp = new Corp(security.Replace("/isin/", ""), 0, dateEmit, dateBack, name);
+            Corp corp = new Corp(security, 0, dateEmit, dateBack, name);
             l_title.Add(corp);
         }
 

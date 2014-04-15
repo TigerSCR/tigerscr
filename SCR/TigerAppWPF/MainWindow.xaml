@@ -1,0 +1,39 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="TigerAppWPF.MainWindow"
+        Title="MainWindow" Height="350" Width="525">
+    <Grid>
+        <DockPanel>
+            <Menu DockPanel.Dock="Top" HorizontalAlignment="Left" VerticalAlignment="Top" Background="White" d:IsLocked="True">
+                <MenuItem Header="Fichier">
+                    <MenuItem Header="Ouvrir" Click="MenuItem_Click"/>
+                    <MenuItem Header="Quitter"/>
+                </MenuItem>
+                <MenuItem Header="Outils">
+                    <MenuItem Header="Calculer">
+                        <MenuItem Header="SCR Equity" Click="Outils_Calculer_Equity_Click"/>
+                    </MenuItem>
+                </MenuItem>
+            </Menu>
+            <ListView Name="test" DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="0" ScrollViewer.HorizontalScrollBarVisibility="Auto" Width="500" Height="280">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn DisplayMemberBinding="{Binding Isin}">
+                            <Label>ISIN
+                            </Label>
+                        </GridViewColumn>
+                        <GridViewColumn DisplayMemberBinding="{Binding Qtty}">
+                            <Label>Quantité
+                            </Label>
+                        </GridViewColumn>
+                        <GridViewColumn DisplayMemberBinding="{Binding Value}">
+                            <Label>Valeur
+                            </Label>
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+        </DockPanel>
+    </Grid>
+</Window>

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Windows.Forms;
+using System.Windows;
 
-namespace TigerSCR
+namespace TigerAppWPF
 {
     class Repartiteur
     {

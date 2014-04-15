@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Excel = Microsoft.Office.Interop.Excel;
-using System.Windows.Forms;
 
-namespace TigerSCR
+namespace TigerAppWPF
 {
-    class Engine
+    class Engine : ISubject
     {
         //Static var for Singleton pattern
         private static Engine engine;
@@ -16,7 +15,7 @@ namespace TigerSCR
 
         //Runtime var
         private List<Title> portfolio;
-        private Dictionary<string,int> isins=new Dictionary<string,int>();
+        private List<Tuple<string,int,string>> isins=new List<Tuple<string,int,string>>();
 
         private Engine()
         {
@@ -32,7 +31,7 @@ namespace TigerSCR
             return engine;
         }
 
-        public void Update()
+        /*public void Update()
         {
             string s = "";
             this.getIsin();
@@ -52,10 +51,10 @@ namespace TigerSCR
 
             //raz des isins pour prochain init
             this.isins = new Dictionary<string, int>();
-        }
+        }*/
 
 
-        public void getIsin()
+        /*public void getIsin()
         {
             
             //Get all the used cells
@@ -90,11 +89,26 @@ namespace TigerSCR
             }
 
             MessageBox.Show("Acquisition terminée avec " + this.isins.Count() + " Codes");
+        }*/
+
+        public void setIsins(List<Tuple<string, int>> temp)
+        {
+            foreach(var i in temp)
+            {
+                if (i.Item1 == null /*|| i.Item2 == null*/)
+                {
+                    ArgumentException except = new ArgumentException();
+                    throw except;
+                }
+                this.isins.Add(new Tuple<string,int,string>(i.Item1, i.Item2,"test"));
+            }
+            this.getTitle();
         }
 
         public void getTitle()
         {
             this.portfolio = Connector.getConnector().getInfo(this.isins);
+            this.notifyObservers();
         }
 
         public void calculate()
@@ -112,5 +126,31 @@ namespace TigerSCR
             }
             return result;
         }
+    
+        //Implementing ISubject
+        private List<IObserver> observerCollection=new List<IObserver>();
+        public void registerObserver(IObserver observer)
+        {
+            this.observerCollection.Add(observer);
+        }
+        public void unregisterObserver(IObserver observer)
+        {
+            this.observerCollection.Remove(observer);
+        }
+        public void notifyObservers()
+        {
+            foreach (IObserver observer in this.observerCollection)
+            {
+                observer.notify();
+            }
+        }
+
+        //Setter & Getter
+       /* public Dictionary<string, int> Isins
+        {
+            get { return this.isins; }
+        }*/
+        public List<Title> Portfolio
+        { get { return this.portfolio; } }
     }
 }

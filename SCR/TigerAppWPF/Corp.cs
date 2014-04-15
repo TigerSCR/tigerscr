@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace TigerSCR
+namespace TigerAppWPF
 {
     public class Corp : Title
     {

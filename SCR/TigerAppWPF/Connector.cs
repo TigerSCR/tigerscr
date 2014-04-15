@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Bloomberglp.Blpapi;
+using System.Windows;
 //using BEmu;
 
-namespace TigerSCR
+namespace TigerAppWPF
 {
     class Connector
     {
@@ -17,7 +18,7 @@ namespace TigerSCR
         private SessionOptions sessionOptions;
         static private Request request;
         static private List<Title> l_title;
-        static Dictionary<string,Tuple<int, string>> d_title;
+        static Dictionary<string, Tuple<int, string>> d_title;
 
         static private bool isGetType;
 
@@ -54,21 +55,20 @@ namespace TigerSCR
             l_title = new List<Title>();
             if (!session.Start())
             {
-                System.Console.WriteLine("Could not start session.");
-                Console.WriteLine(session.ToString());
+                MessageBox.Show("Could not start session.\n" + session.ToString(), "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
                 Remplissage_Non_connection();
                 return;
             }
             if (!session.OpenService("//blp/refdata"))
             {
-                System.Console.WriteLine("Could not open service " +
-                "//blp/refdata");
+                MessageBox.Show("Could not open service " +
+                "//blp/refdata", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
             refDataSvc = session.GetService("//blp/refdata");
             if (refDataSvc == null)
             {
-                Console.WriteLine("Cannot get service");
+                MessageBox.Show("Cannot get service", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
             else
@@ -93,7 +93,7 @@ namespace TigerSCR
                 d_title.Add(tuple.Item1, new Tuple<int, string>(tuple.Item2, tuple.Item3));
             }
             isGetType = true;
-            
+
 
             foreach (var title in _d_title)
             {
@@ -107,8 +107,8 @@ namespace TigerSCR
             foreach (Title title in l_title)
             {
                 qtty = d_title[title.Isin].Item1;
-                
-                if(qtty == 0)
+
+                if (qtty == 0)
                 {
                     throw new NotFoundException(title.Isin + " not found");
                 }
@@ -123,9 +123,9 @@ namespace TigerSCR
         {
             if (l_title.Count == 0)
             {
-                l_title.Add(new Equity("US03938L1044", 0, "LU", "USD", "ARCELORMITTAL-NY REGISTERED", 15.65));
-                l_title.Add(new Equity("US76218Y1038", 0, "US", "USD", "RHINO RESOURCE PARTNERS LP", 13.08));
-                l_title.Add(new Corp("XS0643300717", 0, "2011-06-30", "2014-07-07", "RCI BANQUE SA"));
+                l_title.Add(new Equity("US03938L1044", 50, "LU", "USD", "ARCELORMITTAL-NY REGISTERED", 15.65));
+                l_title.Add(new Equity("US76218Y1038", 25, "US", "USD", "RHINO RESOURCE PARTNERS LP", 13.08));
+                l_title.Add(new Corp("XS0643300717", 100, "2011-06-30", "2014-07-07", "RCI BANQUE SA"));
             }
         }
 
@@ -202,17 +202,17 @@ namespace TigerSCR
                                     RequestEquity(security);
                                 else
                                     ParseEquity(fieldData, security);
-                            break;
+                                break;
 
                             case "Corp":
-                            if (isGetType)
-                                RequestCorp(security);
-                            else
-                                ParseCorp(fieldData, security);
-                            break;
+                                if (isGetType)
+                                    RequestCorp(security);
+                                else
+                                    ParseCorp(fieldData, security);
+                                break;
 
                             default:
-                            throw new FormatException("market sector invalid: " + marketSector);
+                                throw new FormatException("market sector invalid: " + marketSector);
                         }
                     }
                 }
@@ -227,8 +227,8 @@ namespace TigerSCR
 
         static private void RequestCorp(string title)
         {
-            d_title[title] = new Tuple<int,string>(d_title[title].Item1, "Corp");
-            request.Append("securities", "/isin/"+title);
+            d_title[title] = new Tuple<int, string>(d_title[title].Item1, "Corp");
+            request.Append("securities", "/isin/" + title);
             //request.Append("fields", "MARKET_SECTOR_DES");
             request.Append("fields", "WORKOUT_DT_BID");
             request.Append("fields", "ISSUE_DT");
@@ -266,7 +266,7 @@ namespace TigerSCR
             l_title.Add(corp);
         }
 
-        #endregion 
+        #endregion
 
 
         private static void handleOtherEvent(Event eventObj)

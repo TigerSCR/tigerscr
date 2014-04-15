@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace TigerSCR
+namespace TigerAppWPF
 {
     public class FabriqueTitre
     {
-        public Title CreateTitle(string _isin, string _countrySecurity, Security security)
+       /* public Title CreateTitle(string _isin, string _countrySecurity, Security security)
         {
             if (security.Equals(Security.equity))
             {
@@ -21,7 +21,7 @@ namespace TigerSCR
             {
                 throw new FormatException("Securite non valide");
             }
-        }
+        }*/
     }
 
     

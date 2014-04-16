@@ -20,6 +20,8 @@ namespace TigerSCR
         static Dictionary<string,Tuple<int, string>> d_title;
 
         static private bool isGetType;
+        static private bool isGetCurve;
+        static private CourbeSwap c_libor = new CourbeSwap("EuroSwap");
 
         private Connector()
         {
@@ -74,6 +76,11 @@ namespace TigerSCR
             else
             {
                 request = refDataSvc.CreateRequest("ReferenceDataRequest");
+                c_libor.SetRequest(request);
+                isGetCurve = true;
+                ResponseLoop();
+                isGetCurve = false;
+                Console.WriteLine(c_libor.ToString());
             }
         }
 
@@ -101,6 +108,8 @@ namespace TigerSCR
                 request.Append("fields", "MARKET_SECTOR_DES");
             }
             ResponseLoop(); // Recupère les secteurs de marché
+
+            isGetType = false;
             ResponseLoop(); // Recupère les actions propres au secteur
 
             int qtty;
@@ -113,6 +122,7 @@ namespace TigerSCR
                     throw new NotFoundException(title.Isin + " not found");
                 }
             }
+            d_title.Clear();
             return l_title;
         }
 
@@ -121,6 +131,7 @@ namespace TigerSCR
         /// </summary>
         static public void Remplissage_Non_connection()
         {
+            Console.WriteLine("Mode non connection, valeurs invalides");
             if (l_title.Count == 0)
             {
                 l_title.Add(new Equity("US03938L1044", 0, "LU", "USD", "ARCELORMITTAL-NY REGISTERED", 15.65));
@@ -186,40 +197,52 @@ namespace TigerSCR
                         Element securityError = securityData.GetElement("securityError");
                         throw new Exception("securityError " + securityError.ToString());
                     }
+
                     else
                     {
                         Element fieldData = securityData.GetElement("fieldData");
 
-                        if (isGetType)
-                            marketSector = fieldData.GetElementAsString("MARKET_SECTOR_DES");
-                        else
-                            marketSector = d_title[security].Item2;
-
-                        switch (marketSector)
+                        if (isGetCurve)
                         {
-                            case "Equity":
-                                if (isGetType)
-                                    RequestEquity(security);
-                                else
-                                    ParseEquity(fieldData, security);
-                            break;
+                            c_libor.ParseEquity(fieldData);
+                        }
 
-                            case "Corp":
+                        else
+                        {
+
                             if (isGetType)
-                                RequestCorp(security);
+                                marketSector = fieldData.GetElementAsString("MARKET_SECTOR_DES");
                             else
-                                ParseCorp(fieldData, security);
-                            break;
+                                marketSector = d_title[security].Item2;
 
-                            default:
-                            throw new FormatException("market sector invalid: " + marketSector);
+                            switch (marketSector)
+                            {
+                                case "Equity":
+                                    if (isGetType)
+                                        RequestEquity(security);
+                                    else
+                                        ParseEquity(fieldData, security);
+                                    break;
+
+                                case "Corp":
+                                    if (isGetType)
+                                        RequestCorp(security);
+                                    else
+                                        ParseCorp(fieldData, security);
+                                    break;
+
+                                case "Govt":
+                                    break;
+
+                                case "Index":
+                                    break;
+
+                                default:
+                                    throw new FormatException("market sector invalid: " + marketSector);
+                            }
                         }
                     }
                 }
-            }
-            if (isGetType)
-            {
-                isGetType = false;
             }
         }
 
@@ -235,6 +258,28 @@ namespace TigerSCR
             request.Append("fields", "NAME");
         }
 
+        private static void ParseCorp(Element fieldData, string security)
+        {
+            string dateBack = fieldData.GetElementAsString("WORKOUT_DT_BID");
+            string dateEmit = fieldData.GetElementAsString("ISSUE_DT");
+            string name = fieldData.GetElementAsString("NAME");
+
+            Corp corp = new Corp(security, 0, dateEmit, dateBack, name);
+            l_title.Add(corp);
+        }
+
+        static private void RequestEquity(string title)
+        {
+            d_title[title] = new Tuple<int, string>(d_title[title].Item1, "Equity");
+            request.Append("securities", "/isin/" + title);
+            //request.Append("fields", "MARKET_SECTOR_DES");
+            request.Append("fields", "PX_LAST");
+            request.Append("fields", "CRNCY");
+            request.Append("fields", "COUNTRY_ISO");
+            request.Append("fields", "NAME");
+        }
+
+
         private static void ParseEquity(Element fieldData, string security)
         {
             string country = fieldData.GetElementAsString("COUNTRY_ISO");
@@ -244,26 +289,6 @@ namespace TigerSCR
 
             Equity equit = new Equity(security, 0, country, currency, name, px_last);
             l_title.Add(equit);
-        }
-
-        static private void RequestEquity(string title)
-        {
-            request.Append("securities", title);
-            //request.Append("fields", "MARKET_SECTOR_DES");
-            request.Append("fields", "PX_LAST");
-            request.Append("fields", "CRNCY");
-            request.Append("fields", "COUNTRY_ISO");
-            request.Append("fields", "NAME");
-        }
-
-        private static void ParseCorp(Element fieldData, string security)
-        {
-            string dateBack = fieldData.GetElementAsString("WORKOUT_DT_BID");
-            string dateEmit = fieldData.GetElementAsString("ISSUE_DT");
-            string name = fieldData.GetElementAsString("NAME");
-
-            Corp corp = new Corp(security, 0, dateEmit, dateBack, name);
-            l_title.Add(corp);
         }
 
         #endregion 

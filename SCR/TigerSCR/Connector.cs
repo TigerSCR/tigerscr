@@ -232,9 +232,45 @@ namespace TigerSCR
                                     break;
 
                                 case "Govt":
+                                    if (isGetType)
+                                        RequestEquity(security);
+                                    else
+                                        ParseEquity(fieldData, security);
                                     break;
 
                                 case "Index":
+                                    if (isGetType)
+                                        RequestEquity(security);
+                                    else
+                                        ParseEquity(fieldData, security);
+                                    break;
+
+                                case "Curncy":
+                                    if (isGetType)
+                                        RequestEquity(security);
+                                    else
+                                        ParseEquity(fieldData, security);
+                                    break;
+
+                                case "Mmkt":
+                                    if (isGetType)
+                                        RequestEquity(security);
+                                    else
+                                        ParseEquity(fieldData, security);
+                                    break;
+
+                                case "Mtge":
+                                    if (isGetType)
+                                        RequestEquity(security);
+                                    else
+                                        ParseEquity(fieldData, security);
+                                    break;
+
+                                case "Muni":
+                                    if (isGetType)
+                                        RequestEquity(security);
+                                    else
+                                        ParseEquity(fieldData, security);
                                     break;
 
                                 default:

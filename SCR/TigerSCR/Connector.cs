@@ -127,7 +127,7 @@ namespace TigerSCR
             //    }
             //}
             d_title.Clear();
-            this.WriteCSV();
+            //this.WriteCSV();
             return l_title;
         }
 
@@ -238,9 +238,9 @@ namespace TigerSCR
 
                                 case "Govt":
                                     if (isGetType)
-                                        RequestEquity(security);
+                                        RequestGovt(security);
                                     else
-                                        ParseEquity(fieldData, security);
+                                        ParseGovt(fieldData, security);
                                     break;
 
                                 case "Index":
@@ -330,6 +330,29 @@ namespace TigerSCR
             string name = fieldData.GetElementAsString("NAME");
 
             Equity equit = new Equity(security, d_title[security].Item1, country, currency, name, px_last);
+            l_title.Add(equit);
+        }
+
+        static private void RequestGovt(string title)
+        {
+            d_title[title] = new Tuple<int, string>(d_title[title].Item1, "Govt");
+            request.Append("securities", "/isin/" + title);
+            //request.Append("fields", "MARKET_SECTOR_DES");
+            request.Append("fields", "PX_LAST");
+            request.Append("fields", "CRNCY");
+            request.Append("fields", "COUNTRY_ISO");
+            request.Append("fields", "NAME");
+        }
+
+
+        private static void ParseGovt(Element fieldData, string security)
+        {
+            string country = fieldData.GetElementAsString("COUNTRY_ISO");
+            double px_last = fieldData.GetElementAsFloat64("PX_LAST");
+            string currency = fieldData.GetElementAsString("CRNCY");
+            string name = fieldData.GetElementAsString("NAME");
+
+            Govt equit = new Govt(security, d_title[security].Item1, country, currency, name, px_last);
             l_title.Add(equit);
         }
 

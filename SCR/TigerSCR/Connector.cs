@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Bloomberglp.Blpapi;
+using System.IO;
 //using BEmu;
 
 namespace TigerSCR
@@ -21,7 +22,7 @@ namespace TigerSCR
 
         static private bool isGetType;
         static private bool isGetCurve;
-        static private CourbeSwap c_libor = new CourbeSwap("EuroSwap");
+        static private CourbeSwap c_libor = new CourbeSwap("EuroSwap", "S0045Z", "BLC2 Curncy");
 
         private Connector()
         {
@@ -43,6 +44,7 @@ namespace TigerSCR
             }
             return _instance;
         }
+        
 
         /// <summary>
         /// Etablie la connection avec Bloomberg
@@ -80,6 +82,7 @@ namespace TigerSCR
                 isGetCurve = true;
                 ResponseLoop();
                 isGetCurve = false;
+                //c_libor.ToCSV(); //ecrit le fichier csv dans CSV/@nomcourbe.csv
                 Console.WriteLine(c_libor.ToString());
             }
         }
@@ -107,22 +110,24 @@ namespace TigerSCR
                 request.Append("securities", "/isin/" + title.Item1);
                 request.Append("fields", "MARKET_SECTOR_DES");
             }
+
             ResponseLoop(); // Recupère les secteurs de marché
 
             isGetType = false;
             ResponseLoop(); // Recupère les actions propres au secteur
 
-            int qtty;
-            foreach (Title title in l_title)
-            {
-                qtty = d_title[title.Isin].Item1;
+            //int qtty;
+            //foreach (Title title in l_title)
+            //{
+            //    qtty = d_title[title.Isin].Item1;
                 
-                if(qtty == 0)
-                {
-                    throw new NotFoundException(title.Isin + " not found");
-                }
-            }
+            //    if(qtty == 0)
+            //    {
+            //        throw new NotFoundException(title.Isin + " not found");
+            //    }
+            //}
             d_title.Clear();
+            this.WriteCSV();
             return l_title;
         }
 
@@ -132,12 +137,8 @@ namespace TigerSCR
         static public void Remplissage_Non_connection()
         {
             Console.WriteLine("Mode non connection, valeurs invalides");
-            if (l_title.Count == 0)
-            {
-                l_title.Add(new Equity("US03938L1044", 0, "LU", "USD", "ARCELORMITTAL-NY REGISTERED", 15.65));
-                l_title.Add(new Equity("US76218Y1038", 0, "US", "USD", "RHINO RESOURCE PARTNERS LP", 13.08));
-                l_title.Add(new Corp("XS0643300717", 0, "2011-06-30", "2014-07-07", "RCI BANQUE SA"));
-            }
+            ReadCSV();
+            c_libor.ReadCSV();
         }
 
         /// <summary>
@@ -183,6 +184,7 @@ namespace TigerSCR
                     Console.WriteLine("Mode non connecté");
                     Remplissage_Non_connection();
                 }
+
                 Element securityDataArray = ReferenceDataResponse.GetElement("securityData");
                 //Console.WriteLine(message.ToString());
 
@@ -190,7 +192,10 @@ namespace TigerSCR
                 for (int i = 0; i < numItems; ++i)
                 {
                     Element securityData = securityDataArray.GetValueAsElement(i);
-                    string security = securityData.GetElementAsString("security").Replace("/isin/", "");
+                    string security = securityData.GetElementAsString("security");
+                    if(!isGetCurve)
+                        security = security.Replace("/isin/", "");
+
                     //int sequenceNumber = securityData.GetElementAsInt32("sequenceNumber");
                     if (securityData.HasElement("securityError"))
                     {
@@ -300,7 +305,8 @@ namespace TigerSCR
             string dateEmit = fieldData.GetElementAsString("ISSUE_DT");
             string name = fieldData.GetElementAsString("NAME");
 
-            Corp corp = new Corp(security, 0, dateEmit, dateBack, name);
+            c_libor.GetValue(dateEmit);
+            Corp corp = new Corp(security, d_title[security].Item1, dateEmit, dateBack, name);
             l_title.Add(corp);
         }
 
@@ -323,11 +329,52 @@ namespace TigerSCR
             string currency = fieldData.GetElementAsString("CRNCY");
             string name = fieldData.GetElementAsString("NAME");
 
-            Equity equit = new Equity(security, 0, country, currency, name, px_last);
+            Equity equit = new Equity(security, d_title[security].Item1, country, currency, name, px_last);
             l_title.Add(equit);
         }
 
         #endregion 
+
+
+        #region CSV
+
+        public void WriteCSV()
+        {
+            using (StreamWriter sw = new StreamWriter(@"CSV\Titres.csv"))
+            {
+                foreach (var title in l_title)
+                {
+                    sw.WriteLine(title.ToCSV());
+                }
+            }
+        }
+
+        static public void ReadCSV()
+        {
+            // Read and show each line from the file.
+            string line = "";
+            string[] values;
+            Console.WriteLine("Lecture CSV, ancienne liste Title ecrasée");
+            l_title.Clear();
+            using (StreamReader sr = new StreamReader(@"CSV\Titres.csv"))
+            {
+                while ((line = sr.ReadLine()) != null)
+                {
+                    values = line.Split(';');
+                    switch (values[0])
+                    {
+                        case "Equity":
+                            l_title.Add(new Equity(values[1], int.Parse(values[2]), values[3], values[4], values[5], Convert.ToDouble(values[6])));
+                            break;
+                        case "Corp":
+                            l_title.Add(new Corp(values[1], int.Parse(values[2]), values[3], values[4], values[5]));
+                            break;
+                    }
+                }
+            }
+        }
+
+        #endregion
 
 
         private static void handleOtherEvent(Event eventObj)

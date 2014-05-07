@@ -26,5 +26,10 @@ namespace TigerSCR
         {
             return name + " DateEmit : " + dateEmit + " DateBack: " + dateBack;
         }
+
+        override public string ToCSV()
+        {
+            return "Corp;" + base.ToCSV() + ";" + dateEmit + ";" + dateBack + ";" + name;
+        }
     }
 }

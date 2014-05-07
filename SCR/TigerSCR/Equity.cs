@@ -15,6 +15,11 @@ namespace TigerSCR
             : base(_isin, _qtty, country, currency, name, value)
         {}
 
+        override public string ToCSV()
+        {
+            return "Equity;" +base.ToCSV();
+        }
+
         /*public Equity(Title _t)
             : base(_t)
         {}*/

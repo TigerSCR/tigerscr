@@ -13,10 +13,9 @@ namespace TigerSCR
         private string name;
         private double value;
         private string currency;
-        private bool oecd;
-        private bool eu;
+        private bool oecd = false;
+        private bool eu= false;
         private bool strategic = false;
-
 
         #region donnees
         private List<string> l_oecd = new List<string>{
@@ -130,6 +129,14 @@ namespace TigerSCR
         override public string ToString()
         {
             return isin + " : Pays : " + country + " Nom : " + name + " = "+qtty+ "(" + value+" "+ currency+")";
+        }
+
+        virtual public string ToCSV()
+        {
+            if (name != null)
+                return isin + ";" + qtty + ";" + country + ";" + currency + ";" + name + ";" + value;
+            else
+                return isin + ";" + qtty;
         }
     }
 }

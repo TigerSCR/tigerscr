@@ -7,12 +7,12 @@ namespace TigerSCR
 {
         public class Govt : Title
         {
-            public Govt(string _isin, int _qtty)
-                : base(_isin, _qtty)
+            public Govt(string _isin, int _qtty, int _nominale)
+                : base(_isin, _qtty, _nominale)
             { }
 
-            public Govt(string _isin, int _qtty, string country, string currency, string name, double value)
-                : base(_isin, _qtty, country, currency, name, value)
+            public Govt(string _isin, int _qtty, int _nominale, string country, string currency, string name, double value)
+                : base(_isin, _qtty,  _nominale, country, currency, name, value)
             { }
 
             override public string ToCSV()

@@ -8,9 +8,9 @@ using System.IO;
 
 public class CourbeSwap
 {
-    private Dictionary<DateTime, double> pointsCourbe = new Dictionary<DateTime, double>();
-    private string nom;
-    private string isin;
+    public SortedList<DateTime, double> pointsCourbe = new SortedList<DateTime, double>();
+    public string name { get; private set; }
+    public string isin { get; private set; }
     private string security;
     private DateTime dtNow = DateTime.Now;
     private string text_tenor = "1D 2D 1W 2W 1M 2M 3M 4M 5M 6M 7M 8M 9M 10M 11M 1Y 15M 18M 21M 2Y 27M 30M 33M 3Y 39M 42M 45M 4Y 5Y 6Y " + //1I 2I 3I 4I
@@ -20,7 +20,7 @@ public class CourbeSwap
 
 	public CourbeSwap(string _nom, string _isin, string _security)
 	{
-        this.nom = _nom;
+        this.name = _nom;
         this.isin = _isin;
         this.t_tenor = text_tenor.Split(' ');
         this.security = "BLC2 Curncy";
@@ -28,7 +28,7 @@ public class CourbeSwap
 
     public Request SetRequest(Request request)
     {
-        switch (nom)
+        switch (name)
         {
             case "EuroSwap":
 
@@ -42,7 +42,7 @@ public class CourbeSwap
                 break;
 
             default:
-                throw new FormatException("Invalid name : " + nom);
+                throw new FormatException("Invalid name : " + name);
         }
         return request;
     }
@@ -112,12 +112,13 @@ public class CourbeSwap
 
     public void WriteCSV()
     {
-        using (StreamWriter sw = new StreamWriter(@"CSV\" + nom + ".csv"))
+        using (StreamWriter sw = new StreamWriter(@"CSV\" + name + ".csv"))
         {
             foreach (var point in pointsCourbe)
             {
                 sw.WriteLine(point.Key + ";" + point.Value);
             }
+            sw.Close();
         }
     }
 
@@ -128,42 +129,51 @@ public class CourbeSwap
         string[] values;
         Console.WriteLine("Lecture CSV, ancienne courbe ecrasée");
         pointsCourbe.Clear();
-        using (StreamReader sr = new StreamReader(@"CSV\"+nom + ".csv"))
+        try
         {
-            while ((line = sr.ReadLine()) != null)
+            using (StreamReader sr = new StreamReader(@"CSV\" + name + ".csv"))
             {
-                values = line.Split(';');
-                pointsCourbe.Add(Convert.ToDateTime(values[0]), Convert.ToDouble(values[1]));
+                while ((line = sr.ReadLine()) != null)
+                {
+                    values = line.Split(';');
+                    pointsCourbe.Add(Convert.ToDateTime(values[0]), Convert.ToDouble(values[1]));
+                }
+                sr.Close();
             }
+        }
+
+        catch (Exception)
+        {
+
         }
     }
 
     
-
-    public void GetValue(string date)
+    /// <summary>
+    /// Donne la valeur d'une date données à partir de la courbe
+    /// </summary>
+    /// <param name="date"></param>
+    /// <returns></returns>
+    public double GetValue(string date)
     {
         //ex : 2011-06-30
-        DateTime dtEmit = Convert.ToDateTime(date);
+        DateTime dt_emit = Convert.ToDateTime(date);
+        DateTime dt_last = DateTime.Now;
+        double value;
 
-        TimeSpan diff = dtNow - dtEmit;
-        //Console.WriteLine("mois : " + dt.Month + " year : " + dt.Year + " day : " + dt.Day);
+        foreach (var dt in pointsCourbe)
+        {
+            if (dt_emit < dt.Key && dt_emit > dt_last)
+            {
+                //interpolation linéaire entre dt et dt_last
+                double p = (dt.Value - pointsCourbe[dt_last])/ (dt.Key - dt_last).TotalDays; // pente
+                value = p * (dt_emit - dt_last).TotalDays + pointsCourbe[dt_last];
+                return value;
+            }
+            dt_last = dt.Key;
+        }
+        return pointsCourbe[dt_last];
 
 
-        //string s = "";
-        //if (dtEmit.Year == dtNow.Year)
-        //{
-        //    if (dtNow.Month == dtNow.Month)
-        //    {
-        //        if (dtNow.Day == dtEmit.Day)
-        //        {
-                    
-        //        }
-
-        //        else if 
-        //        {
-
-        //        }
-        //    }
-        //}
     }
 }

@@ -18,11 +18,11 @@ namespace TigerSCR
         private SessionOptions sessionOptions;
         static private Request request;
         static private List<Title> l_title;
-        static Dictionary<string,Tuple<int, string>> d_title;
+        static Dictionary<string,Tuple<int, int, string>> d_title;
 
         static private bool isGetType;
         static private bool isGetCurve;
-        static private CourbeSwap c_libor = new CourbeSwap("EuroSwap", "S0045Z", "BLC2 Curncy");
+        static private CourbeSwap curve;
 
         private Connector()
         {
@@ -78,12 +78,6 @@ namespace TigerSCR
             else
             {
                 request = refDataSvc.CreateRequest("ReferenceDataRequest");
-                c_libor.SetRequest(request);
-                isGetCurve = true;
-                ResponseLoop();
-                isGetCurve = false;
-                //c_libor.ToCSV(); //ecrit le fichier csv dans CSV/@nomcourbe.csv
-                Console.WriteLine(c_libor.ToString());
             }
         }
 
@@ -92,15 +86,15 @@ namespace TigerSCR
         /// </summary>
         /// <param name="d_title">Isin avec leurs quantité</param>
         /// <returns>la liste de Titre avec les informations remplit</returns>
-        public List<Title> getInfo(List<Tuple<string, int, string>> _d_title)
+        public List<Title> getInfo(List<Tuple<string, int, int>> _d_title)
         {
             if (l_title.Count != 0)
                 return l_title;
 
-            d_title = new Dictionary<string, Tuple<int, string>>();
+            d_title = new Dictionary<string, Tuple<int, int, string>>();
             foreach (var tuple in _d_title)
             {
-                d_title.Add(tuple.Item1, new Tuple<int, string>(tuple.Item2, tuple.Item3));
+                d_title.Add(tuple.Item1, new Tuple<int, int, string>(tuple.Item2, tuple.Item3, ""));
             }
             isGetType = true;
             
@@ -116,19 +110,22 @@ namespace TigerSCR
             isGetType = false;
             ResponseLoop(); // Recupère les actions propres au secteur
 
-            //int qtty;
-            //foreach (Title title in l_title)
-            //{
-            //    qtty = d_title[title.Isin].Item1;
-                
-            //    if(qtty == 0)
-            //    {
-            //        throw new NotFoundException(title.Isin + " not found");
-            //    }
-            //}
             d_title.Clear();
-            //this.WriteCSV();
+            this.WriteCSV();
             return l_title;
+        }
+
+        public CourbeSwap GetCurve(string _isin)
+        {
+            if (curve == null || curve.isin != _isin)
+            {
+                curve = new CourbeSwap("EuroSwap", _isin, "BLC2 Curncy");// isin euroswap : "S0045Z"
+                curve.SetRequest(request);
+                isGetCurve = true;
+                ResponseLoop();
+                isGetCurve = false;
+            }
+            return curve;
         }
 
         /// <summary>
@@ -138,7 +135,7 @@ namespace TigerSCR
         {
             Console.WriteLine("Mode non connection, valeurs invalides");
             ReadCSV();
-            c_libor.ReadCSV();
+            //curve.ReadCSV();
         }
 
         /// <summary>
@@ -209,7 +206,7 @@ namespace TigerSCR
 
                         if (isGetCurve)
                         {
-                            c_libor.ParseEquity(fieldData);
+                            curve.ParseEquity(fieldData);
                         }
 
                         else
@@ -218,7 +215,7 @@ namespace TigerSCR
                             if (isGetType)
                                 marketSector = fieldData.GetElementAsString("MARKET_SECTOR_DES");
                             else
-                                marketSector = d_title[security].Item2;
+                                marketSector = d_title[security].Item3;
 
                             switch (marketSector)
                             {
@@ -238,9 +235,9 @@ namespace TigerSCR
 
                                 case "Govt":
                                     if (isGetType)
-                                        RequestGovt(security);
+                                        RequestEquity(security);
                                     else
-                                        ParseGovt(fieldData, security);
+                                        ParseEquity(fieldData, security);
                                     break;
 
                                 case "Index":
@@ -291,7 +288,7 @@ namespace TigerSCR
 
         static private void RequestCorp(string title)
         {
-            d_title[title] = new Tuple<int,string>(d_title[title].Item1, "Corp");
+            d_title[title] = new Tuple<int,int,string>(d_title[title].Item1,d_title[title].Item2, "Corp");
             request.Append("securities", "/isin/"+title);
             //request.Append("fields", "MARKET_SECTOR_DES");
             request.Append("fields", "WORKOUT_DT_BID");
@@ -305,14 +302,14 @@ namespace TigerSCR
             string dateEmit = fieldData.GetElementAsString("ISSUE_DT");
             string name = fieldData.GetElementAsString("NAME");
 
-            c_libor.GetValue(dateEmit);
-            Corp corp = new Corp(security, d_title[security].Item1, dateEmit, dateBack, name);
+            curve.GetValue(dateEmit);
+            Corp corp = new Corp(security, d_title[security].Item1, d_title[security].Item2, dateEmit, dateBack, name);
             l_title.Add(corp);
         }
 
         static private void RequestEquity(string title)
         {
-            d_title[title] = new Tuple<int, string>(d_title[title].Item1, "Equity");
+            d_title[title] = new Tuple<int, int, string>(d_title[title].Item1, 0, "Equity");
             request.Append("securities", "/isin/" + title);
             //request.Append("fields", "MARKET_SECTOR_DES");
             request.Append("fields", "PX_LAST");
@@ -333,29 +330,6 @@ namespace TigerSCR
             l_title.Add(equit);
         }
 
-        static private void RequestGovt(string title)
-        {
-            d_title[title] = new Tuple<int, string>(d_title[title].Item1, "Govt");
-            request.Append("securities", "/isin/" + title);
-            //request.Append("fields", "MARKET_SECTOR_DES");
-            request.Append("fields", "PX_LAST");
-            request.Append("fields", "CRNCY");
-            request.Append("fields", "COUNTRY_ISO");
-            request.Append("fields", "NAME");
-        }
-
-
-        private static void ParseGovt(Element fieldData, string security)
-        {
-            string country = fieldData.GetElementAsString("COUNTRY_ISO");
-            double px_last = fieldData.GetElementAsFloat64("PX_LAST");
-            string currency = fieldData.GetElementAsString("CRNCY");
-            string name = fieldData.GetElementAsString("NAME");
-
-            Govt equit = new Govt(security, d_title[security].Item1, country, currency, name, px_last);
-            l_title.Add(equit);
-        }
-
         #endregion 
 
 
@@ -369,6 +343,7 @@ namespace TigerSCR
                 {
                     sw.WriteLine(title.ToCSV());
                 }
+                sw.Close();
             }
         }
 
@@ -390,10 +365,11 @@ namespace TigerSCR
                             l_title.Add(new Equity(values[1], int.Parse(values[2]), values[3], values[4], values[5], Convert.ToDouble(values[6])));
                             break;
                         case "Corp":
-                            l_title.Add(new Corp(values[1], int.Parse(values[2]), values[3], values[4], values[5]));
+                            l_title.Add(new Corp(values[1], int.Parse(values[2]),100, values[3], values[4], values[5]));
                             break;
                     }
                 }
+                sr.Close();
             }
         }
 

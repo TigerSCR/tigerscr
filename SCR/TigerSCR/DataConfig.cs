@@ -61,18 +61,6 @@ namespace TigerSCR
                 else if (unNode.ParentNode.Name == "ue")
                     l_UE.Add(unNode.InnerText);
             }
-
-            Console.WriteLine("liste OCDE");
-            foreach (string s in l_OCDE)
-            {
-                Console.WriteLine(s);
-            }
-
-            Console.WriteLine("liste UE");
-            foreach (string s in l_UE)
-            {
-                Console.WriteLine(s);
-            }
         }
 
     }
